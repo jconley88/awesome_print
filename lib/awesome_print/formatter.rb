@@ -121,7 +121,7 @@ module AwesomePrint
       end
 
       data = vars.sort.map do |declaration, var|
-        key = left_aligned do
+        key = $format_options.left_aligned do
           $format_options.align(declaration, declaration.size)
         end
 
@@ -217,13 +217,6 @@ module AwesomePrint
 
     # Utility methods.
     #------------------------------------------------------------------------------
-
-    def left_aligned
-      current, @options[:indent] = @options[:indent], 0
-      yield
-    ensure
-      @options[:indent] = current
-    end
 
     def indent
       ' ' * $format_options.indentation
