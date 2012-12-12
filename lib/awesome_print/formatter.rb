@@ -39,25 +39,6 @@ module AwesomePrint
       CORE.grep(type)[0] || :self
     end
 
-    # Pick the color and apply it to the given string as necessary.
-    #------------------------------------------------------------------------------
-    def colorize(str, type)
-      str = CGI.escapeHTML(str) if @options[:html]
-      if @options[:plain] || !@options[:color][type] || !@inspector.colorize?
-        str
-      #
-      # Check if the string color method is defined by awesome_print and accepts
-      # html parameter or it has been overriden by some gem such as colorize.
-      #
-      elsif str.method(@options[:color][type]).arity == -1 # Accepts html parameter.
-        str.send(@options[:color][type], @options[:html])
-      else
-        str = %Q|<kbd style="color:#{@options[:color][type]}">#{str}</kbd>| if @options[:html]
-        str.send(@options[:color][type])
-      end
-    end
-
-
     private
 
     # Catch all method to format an arbitrary object.
@@ -66,7 +47,7 @@ module AwesomePrint
       if @options[:raw] && object.instance_variables.any?
         awesome_object(object)
       else
-        colorize(object.inspect.to_s, type)
+        $format_options.colorize(object.inspect.to_s, type)
       end
     end
 
@@ -82,7 +63,7 @@ module AwesomePrint
 
         data = a.inject([]) do |arr, item|
           index = indent
-          index << colorize("[#{arr.size.to_s.rjust(width)}] ", :array) if @options[:index]
+          index << $format_options.colorize("[#{arr.size.to_s.rjust(width)}] ", :array) if @options[:index]
           indented do
             arr << (index << @inspector.awesome(item))
           end
@@ -112,7 +93,7 @@ module AwesomePrint
   
       data = data.map do |key, value|
         indented do
-          align(key, width) << colorize(" => ", :hash) << @inspector.awesome(value)
+          align(key, width) << $format_options.colorize(" => ", :hash) << @inspector.awesome(value)
         end
       end
 
@@ -148,13 +129,13 @@ module AwesomePrint
 
         unless @options[:plain]
           if key =~ /(@\w+)/
-            key.sub!($1, colorize($1, :variable))
+            key.sub!($1, $format_options.colorize($1, :variable))
           else
-            key.sub!(/(attr_\w+)\s(\:\w+)/, "#{colorize('\\1', :keyword)} #{colorize('\\2', :method)}")
+            key.sub!(/(attr_\w+)\s(\:\w+)/, "#{$format_options.colorize('\\1', :keyword)} #{$format_options.colorize('\\2', :method)}")
           end
         end
         indented do
-          key << colorize(" = ", :hash) + @inspector.awesome(o.instance_variable_get(var))
+          key << $format_options.colorize(" = ", :hash) + @inspector.awesome(o.instance_variable_get(var))
         end
       end
       if @options[:multiline]
@@ -181,9 +162,9 @@ module AwesomePrint
     #------------------------------------------------------------------------------
     def awesome_class(c)
       if superclass = c.superclass # <-- Assign and test if nil.
-        colorize("#{c.inspect} < #{superclass}", :class)
+        $format_options.colorize("#{c.inspect} < #{superclass}", :class)
       else
-        colorize(c.inspect, :class)
+        $format_options.colorize(c.inspect, :class)
       end
     end
 
@@ -191,26 +172,26 @@ module AwesomePrint
     #------------------------------------------------------------------------------
     def awesome_file(f)
       ls = File.directory?(f) ? `ls -adlF #{f.path.shellescape}` : `ls -alF #{f.path.shellescape}`
-      colorize(ls.empty? ? f.inspect : "#{f.inspect}\n#{ls.chop}", :file)
+      $format_options.colorize(ls.empty? ? f.inspect : "#{f.inspect}\n#{ls.chop}", :file)
     end
 
     # Format Dir object.
     #------------------------------------------------------------------------------
     def awesome_dir(d)
       ls = `ls -alF #{d.path.shellescape}`
-      colorize(ls.empty? ? d.inspect : "#{d.inspect}\n#{ls.chop}", :dir)
+      $format_options.colorize(ls.empty? ? d.inspect : "#{d.inspect}\n#{ls.chop}", :dir)
     end
 
     # Format BigDecimal object.
     #------------------------------------------------------------------------------
     def awesome_bigdecimal(n)
-      colorize(n.to_s("F"), :bigdecimal)
+      $format_options.colorize(n.to_s("F"), :bigdecimal)
     end
 
     # Format Rational object.
     #------------------------------------------------------------------------------
     def awesome_rational(n)
-      colorize(n.to_s, :rational)
+      $format_options.colorize(n.to_s, :rational)
     end
 
     # Format a method.

@@ -126,10 +126,10 @@ module AwesomePrint
     #------------------------------------------------------------------------------
     def nested(object)
       case printable(object)
-        when :array  then @formatter.colorize("[...]", :array)
-        when :hash   then @formatter.colorize("{...}", :hash)
-        when :struct then @formatter.colorize("{...}", :struct)
-        else @formatter.colorize("...#{object.class}...", :class)
+        when :array  then $format_options.colorize("[...]", :array)
+        when :hash   then $format_options.colorize("{...}", :hash)
+        when :struct then $format_options.colorize("{...}", :struct)
+        else $format_options.colorize("...#{object.class}...", :class)
       end
     end
 
