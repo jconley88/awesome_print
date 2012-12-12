@@ -6,6 +6,7 @@
 autoload :CGI, "cgi"
 require "shellwords"
 require File.dirname(__FILE__) + "/formatters/awesome_method"
+require File.dirname(__FILE__) + "/formatters/awesome_method_collection"
 
 module AwesomePrint
   class Formatter
@@ -228,25 +229,7 @@ module AwesomePrint
     # Format object.methods array.
     #------------------------------------------------------------------------------
     def methods_array(a)
-      a.sort! { |x, y| x.to_s <=> y.to_s }                  # Can't simply a.sort! because of o.methods << [ :blah ]
-      object = a.instance_variable_get('@__awesome_methods__')
-      methods = a.map do |name|
-        AwesomeMethod.new(object, name)
-      end
-
-      width = (methods.size - 1).to_s.size
-      name_width = methods.map { |item| item.method_name.size }.max || 0
-      args_width = methods.map { |item| item.argument_list.size }.max || 0
-
-      data = methods.inject([]) do |arr, item|
-        index = indent
-        index << "[#{arr.size.to_s.rjust(width)}]" if @options[:index]
-        indented do
-          arr << "#{index} #{colorize(item.method_name.rjust(name_width), :method)}#{colorize(item.argument_list.ljust(args_width), :args)} #{colorize(item.owner, :class)}"
-        end
-      end
-
-      "[\n" << data.join("\n") << "\n#{outdent}]"
+      AwesomeMethodCollection.new(a).out
     end
 
     # Format hash keys as plain strings regardless of underlying data type.

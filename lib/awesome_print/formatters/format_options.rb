@@ -7,6 +7,10 @@ class FormatOptions
     @indentation = @options[:indent].abs
   end
 
+  def options
+    @options
+  end
+
   # Pick the color and apply it to the given string as necessary.
   #------------------------------------------------------------------------------
   def colorize(str, type)
