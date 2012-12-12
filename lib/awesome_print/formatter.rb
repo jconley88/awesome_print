@@ -12,7 +12,6 @@ module AwesomePrint
   class Formatter
 
     CORE = [ :array, :hash, :class, :file, :dir, :bigdecimal, :rational, :struct, :method, :unboundmethod ]
-    DEFAULT_LIMIT_SIZE = 7
 
     def initialize(inspector)
       @inspector   = inspector
@@ -68,7 +67,7 @@ module AwesomePrint
           end
         end
 
-        data = limited(data, width) if should_be_limited?
+        data = $format_options.limited(data, width) if $format_options.should_be_limited?
         "[\n" << data.join(",\n") << "\n#{$format_options.outdent}]"
       else
         "[ " << a.map{ |item| @inspector.awesome(item) }.join(", ") << " ]"
@@ -96,7 +95,7 @@ module AwesomePrint
         end
       end
 
-      data = limited(data, width, :hash => true) if should_be_limited?
+      data = $format_options.limited(data, width, :hash => true) if $format_options.should_be_limited?
       if @options[:multiline]
         "{\n" << data.join(",\n") << "\n#{$format_options.outdent}}"
       else
@@ -228,56 +227,6 @@ module AwesomePrint
 
     def indent
       ' ' * $format_options.indentation
-    end
-
-    # To support limited output, for example:
-    #
-    # ap ('a'..'z').to_a, :limit => 3
-    # [
-    #     [ 0] "a",
-    #     [ 1] .. [24],
-    #     [25] "z"
-    # ]
-    #
-    # ap (1..100).to_a, :limit => true # Default limit is 7.
-    # [
-    #     [ 0] 1,
-    #     [ 1] 2,
-    #     [ 2] 3,
-    #     [ 3] .. [96],
-    #     [97] 98,
-    #     [98] 99,
-    #     [99] 100
-    # ]
-    #------------------------------------------------------------------------------
-    def should_be_limited?
-      @options[:limit] == true or (@options[:limit].is_a?(Fixnum) and @options[:limit] > 0)
-    end
-
-    def get_limit_size
-      @options[:limit] == true ? DEFAULT_LIMIT_SIZE : @options[:limit]
-    end
-
-    def limited(data, width, is_hash = false)
-      limit = get_limit_size
-      if data.length <= limit
-        data
-      else
-        # Calculate how many elements to be displayed above and below the separator.
-        head = limit / 2
-        tail = head - (limit - 1) % 2
-
-        # Add the proper elements to the temp array and format the separator.
-        temp = data[0, head] + [ nil ] + data[-tail, tail]
-
-        if is_hash
-          temp[head] = "#{indent}#{data[head].strip} .. #{data[data.length - tail - 1].strip}"
-        else
-          temp[head] = "#{indent}[#{head.to_s.rjust(width)}] .. [#{data.length - tail - 1}]"
-        end
-
-        temp
-      end
     end
   end
 end
