@@ -5,6 +5,7 @@
 #------------------------------------------------------------------------------
 autoload :CGI, "cgi"
 require "shellwords"
+require File.dirname(__FILE__) + "/formatters/awesome_method"
 
 module AwesomePrint
   class Formatter
@@ -214,8 +215,7 @@ module AwesomePrint
     # Format a method.
     #------------------------------------------------------------------------------
     def awesome_method(m)
-      name, args, owner = method_tuple(m)
-      "#{colorize(owner, :class)}##{colorize(name, :method)}#{colorize(args, :args)}"
+      AwesomeMethodData.new(m).out
     end
     alias :awesome_unboundmethod :awesome_method
 
@@ -247,45 +247,6 @@ module AwesomePrint
       end
 
       "[\n" << data.join("\n") << "\n#{outdent}]"
-    end
-
-    # Return [ name, arguments, owner ] tuple for a given method.
-    #------------------------------------------------------------------------------
-    def method_tuple(method)
-      if method.respond_to?(:parameters) # Ruby 1.9.2+
-        # See http://ruby.runpaint.org/methods#method-objects-parameters
-        args = method.parameters.inject([]) do |arr, (type, name)|
-          name ||= (type == :block ? 'block' : "arg#{arr.size + 1}")
-          arr << case type
-            when :req        then name.to_s
-            when :opt, :rest then "*#{name}"
-            when :block      then "&#{name}"
-            else '?'
-          end
-        end
-      else # See http://ruby-doc.org/core/classes/Method.html#M001902
-        args = (1..method.arity.abs).map { |i| "arg#{i}" }
-        args[-1] = "*#{args[-1]}" if method.arity < 0
-      end
-
-      # method.to_s formats to handle:
-      #
-      # #<Method: Fixnum#zero?>
-      # #<Method: Fixnum(Integer)#years>
-      # #<Method: User(#<Module:0x00000103207c00>)#_username>
-      # #<Method: User(id: integer, username: string).table_name>
-      # #<Method: User(id: integer, username: string)(ActiveRecord::Base).current>
-      # #<UnboundMethod: Hello#world>
-      #
-      if method.to_s =~ /(Unbound)*Method: (.*)[#\.]/
-        unbound, klass = $1 && '(unbound)', $2
-        if klass && klass =~ /(\(\w+:\s.*?\))/  # Is this ActiveRecord-style class?
-          klass.sub!($1, '')                    # Yes, strip the fields leaving class name only.
-        end
-        owner = "#{klass}#{unbound}".gsub('(', ' (')
-      end
-
-      [ method.name.to_s, "(#{args.join(', ')})", owner.to_s ]
     end
 
     # Format hash keys as plain strings regardless of underlying data type.
@@ -384,87 +345,6 @@ module AwesomePrint
 
         temp
       end
-    end
-  end
-  
-  class AwesomeMethod
-
-    def initialize(object, name)
-      @object = object
-      @name = name
-      @method_object = getMethodObject if reasonable_name_input?
-    end
-
-    def method_name
-      @name.to_s
-    end
-
-    def argument_list
-      if @method_object
-        if @method_object.respond_to?(:parameters) # Ruby 1.9.2+
-                                           # See http://ruby.runpaint.org/methods#method-objects-parameters
-          args = @method_object.parameters.inject([]) do |arr, (type, name)|
-            name ||= (type == :block ? 'block' : "arg#{arr.size + 1}")
-            arr << case type
-                     when :req        then name.to_s
-                     when :opt, :rest then "*#{name}"
-                     when :block      then "&#{name}"
-                     else '?'
-                   end
-          end
-        else # See http://ruby-doc.org/core/classes/Method.html#M001902
-          args = (1..@method_object.arity.abs).map { |i| "arg#{i}" }
-          args[-1] = "*#{args[-1]}" if @method_object.arity < 0
-        end
-
-        "(#{args.join(', ')})"
-      else
-        '(?)'
-      end
-    end
-
-    def owner
-
-      # method.to_s formats to handle:
-      #
-      # #<Method: Fixnum#zero?>
-      # #<Method: Fixnum(Integer)#years>
-      # #<Method: User(#<Module:0x00000103207c00>)#_username>
-      # #<Method: User(id: integer, username: string).table_name>
-      # #<Method: User(id: integer, username: string)(ActiveRecord::Base).current>
-      # #<UnboundMethod: Hello#world>
-      #
-
-      if @method_object
-        if @method_object.to_s =~ /(Unbound)*Method: (.*)[#\.]/
-          unbound, klass = $1 && '(unbound)', $2
-          if klass && klass =~ /(\(\w+:\s.*?\))/  # Is this ActiveRecord-style class?
-            klass.sub!($1, '')                    # Yes, strip the fields leaving class name only.
-          end
-          result = "#{klass}#{unbound}".gsub('(', ' (')
-        end
-        result.to_s
-      else
-        '?'
-      end
-    end
-
-    def getMethodObject
-      if @object.respond_to?(@name, true)         # Is this a regular method?
-        the_method = @object.method(@name) rescue nil     # Avoid potential ArgumentError if @object#method is overridden.
-        if the_method && the_method.respond_to?(:arity) # Is this original @object#method?
-          the_method                      # Yes, we are good.
-        end
-      elsif @object.respond_to?(:instance_method)        # Is this an unbound method?
-        @object.instance_method(@name)
-      end
-    end
-
-    private
-
-    def reasonable_name_input?
-      # Ignore garbage, ex. 42.methods << [ :blah ]
-      @name.is_a?(Symbol) || @name.is_a?(String)
     end
   end
 end
