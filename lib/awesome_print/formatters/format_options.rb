@@ -61,6 +61,13 @@ class FormatOptions
     end
   end
 
+  def left_aligned
+    current, @options[:indent] = @options[:indent], 0
+    yield
+  ensure
+    @options[:indent] = current
+  end
+
   def indented
     @indentation += @options[:indent].abs
     yield
@@ -68,11 +75,11 @@ class FormatOptions
     @indentation -= @options[:indent].abs
   end
 
-  def left_aligned
-    current, @options[:indent] = @options[:indent], 0
+  def outdented
+    @indentation -= @options[:indent].abs
     yield
   ensure
-    @options[:indent] = current
+    @indentation += @options[:indent].abs
   end
 
   def indent

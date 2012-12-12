@@ -17,18 +17,52 @@ class AwesomeMethodCollection
   end
 
   def out
-    data = @methods.inject([]) do |arr, item|
-      index = $format_options.indent
-      index << "[#{arr.size.to_s.rjust(max_index_width)}]" if $format_options.options[:index]
-      $format_options.indented do
-        arr << "#{index} #{$format_options.colorize(item.method_name.rjust(name_width), :method)}#{$format_options.colorize(item.argument_list.ljust(args_width), :args)} #{$format_options.colorize(item.owner, :class)}"
+    print_array do |result|
+      @methods.each_with_index do |item, index|
+        result << print_method(index, item)
       end
     end
-
-    "[\n" << data.join("\n") << "\n#{$format_options.outdent}]"
   end
 
   private
+
+  def print_indent
+    #This method is confusion because it appears to outdent only to indent again, but that is not all that is going on.
+    #The indent method is dependent on any indented blocks.  The outdented block merely temporarily undoes the
+    #   indent created by the indented block.  So here we undo the indented block and then add a regular indent
+    $format_options.outdented do
+      $format_options.indent
+    end
+  end
+
+  def print_method(index, item)
+    $format_options.indented do
+      print_indent + print_index(index) + ' ' + print_name(item.method_name) + print_args(item.argument_list) + ' ' + print_owner(item.owner) + "\n"
+    end
+  end
+
+  def print_array()
+    result = ""
+    result << "[\n"
+    yield result
+    result << "#{$format_options.outdent}]"
+  end
+
+  def print_index(index)
+    $format_options.options[:index] ? "[#{index.to_s.rjust(max_index_width)}]" : ''
+  end
+
+  def print_name(name)
+    $format_options.colorize(name.rjust(name_width), :method)
+  end
+
+  def print_args(args)
+    $format_options.colorize(args.ljust(args_width), :args)
+  end
+
+  def print_owner(owner)
+    $format_options.colorize(owner, :class)
+  end
 
   def max_index_width
     (@methods.size - 1).to_s.size
