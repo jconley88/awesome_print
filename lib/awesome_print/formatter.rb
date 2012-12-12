@@ -69,7 +69,7 @@ module AwesomePrint
         end
 
         data = limited(data, width) if should_be_limited?
-        "[\n" << data.join(",\n") << "\n#{outdent}]"
+        "[\n" << data.join(",\n") << "\n#{$format_options.outdent}]"
       else
         "[ " << a.map{ |item| @inspector.awesome(item) }.join(", ") << " ]"
       end
@@ -98,7 +98,7 @@ module AwesomePrint
 
       data = limited(data, width, :hash => true) if should_be_limited?
       if @options[:multiline]
-        "{\n" << data.join(",\n") << "\n#{outdent}}"
+        "{\n" << data.join(",\n") << "\n#{$format_options.outdent}}"
       else
         "{ #{data.join(', ')} }"
       end
@@ -138,7 +138,7 @@ module AwesomePrint
         end
       end
       if @options[:multiline]
-        "#<#{awesome_instance(o)}\n#{data.join(%Q/,\n/)}\n#{outdent}>"
+        "#<#{awesome_instance(o)}\n#{data.join(%Q/,\n/)}\n#{$format_options.outdent}>"
       else
         "#<#{awesome_instance(o)} #{data.join(', ')}>"
       end
@@ -241,10 +241,6 @@ module AwesomePrint
 
     def indent
       ' ' * $format_options.indentation
-    end
-
-    def outdent
-      ' ' * ($format_options.indentation - @options[:indent].abs)
     end
 
     # To support limited output, for example:
