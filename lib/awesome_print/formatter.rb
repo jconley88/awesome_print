@@ -63,7 +63,7 @@ module AwesomePrint
         data = a.inject([]) do |arr, item|
           index = indent
           index << $format_options.colorize("[#{arr.size.to_s.rjust(width)}] ", :array) if @options[:index]
-          indented do
+          $format_options.indented do
             arr << (index << @inspector.awesome(item))
           end
         end
@@ -91,7 +91,7 @@ module AwesomePrint
       width += $format_options.indentation if @options[:indent] > 0
   
       data = data.map do |key, value|
-        indented do
+        $format_options.indented do
           align(key, width) << $format_options.colorize(" => ", :hash) << @inspector.awesome(value)
         end
       end
@@ -133,7 +133,7 @@ module AwesomePrint
             key.sub!(/(attr_\w+)\s(\:\w+)/, "#{$format_options.colorize('\\1', :keyword)} #{$format_options.colorize('\\2', :method)}")
           end
         end
-        indented do
+        $format_options.indented do
           key << $format_options.colorize(" = ", :hash) + @inspector.awesome(o.instance_variable_get(var))
         end
       end
