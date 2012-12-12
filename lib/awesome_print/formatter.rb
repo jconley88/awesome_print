@@ -92,7 +92,7 @@ module AwesomePrint
   
       data = data.map do |key, value|
         $format_options.indented do
-          align(key, width) << $format_options.colorize(" => ", :hash) << @inspector.awesome(value)
+          $format_options.align(key, width) << $format_options.colorize(" => ", :hash) << @inspector.awesome(value)
         end
       end
 
@@ -123,7 +123,7 @@ module AwesomePrint
 
       data = vars.sort.map do |declaration, var|
         key = left_aligned do
-          align(declaration, declaration.size)
+          $format_options.align(declaration, declaration.size)
         end
 
         unless @options[:plain]
@@ -218,19 +218,6 @@ module AwesomePrint
 
     # Utility methods.
     #------------------------------------------------------------------------------
-    def align(value, width)
-      if @options[:multiline]
-        if @options[:indent] > 0
-          value.rjust(width)
-        elsif @options[:indent] == 0
-          indent + value.ljust(width)
-        else
-          indent[0, $format_options.indentation + @options[:indent]] + value.ljust(width)
-        end
-      else
-        value
-      end
-    end
 
     def left_aligned
       current, @options[:indent] = @options[:indent], 0
