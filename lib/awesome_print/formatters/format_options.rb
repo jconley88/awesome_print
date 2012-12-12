@@ -75,13 +75,6 @@ class FormatOptions
     @indentation -= @options[:indent].abs
   end
 
-  def outdented
-    @indentation -= @options[:indent].abs
-    yield
-  ensure
-    @indentation += @options[:indent].abs
-  end
-
   def indent
     ' ' * @indentation
   end

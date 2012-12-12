@@ -1,19 +1,8 @@
 class AwesomeMethodCollection
-  include Enumerable
 
   def initialize(methods)
     object_having_methods = methods.instance_variable_get('@__awesome_methods__')
     @methods = awesomify_methods(methods, object_having_methods)
-  end
-
-  def each
-    @methods.each do |m|
-      yield m
-    end
-  end
-
-  def size
-    @methods.size
   end
 
   def print
@@ -26,19 +15,8 @@ class AwesomeMethodCollection
 
   private
 
-  def print_indent
-    #This method is confusing because it appears to outdent only to indent again, but that is not all that is going on.
-    #The indent method is dependent on any indented blocks.  The outdented block merely temporarily undoes the
-    #   indent created by the indented block.  So here we undo the indented block and then add a regular indent
-    $format_options.outdented do
-      $format_options.indent
-    end
-  end
-
   def print_method(index, item)
-    $format_options.indented do
-      print_indent + print_index(index) + ' ' + print_name(item.method_name) + print_args(item.argument_list) + ' ' + print_owner(item.owner) + "\n"
-    end
+    $format_options.indent + print_index(index) + ' ' + print_name(item.method_name) + print_args(item.argument_list) + ' ' + print_owner(item.owner) + "\n"
   end
 
   def print_array()
