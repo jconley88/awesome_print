@@ -60,7 +60,7 @@ module AwesomePrint
         width = (a.size - 1).to_s.size 
 
         data = a.inject([]) do |arr, item|
-          index = indent
+          index = $format_options.indent
           index << $format_options.colorize("[#{arr.size.to_s.rjust(width)}] ", :array) if @options[:index]
           $format_options.indented do
             arr << (index << @inspector.awesome(item))
@@ -213,13 +213,6 @@ module AwesomePrint
       yield
     ensure
       @options[:plain], @options[:multiline] = plain, multiline
-    end
-
-    # Utility methods.
-    #------------------------------------------------------------------------------
-
-    def indent
-      ' ' * $format_options.indentation
     end
   end
 end
