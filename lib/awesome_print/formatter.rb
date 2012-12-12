@@ -55,7 +55,7 @@ module AwesomePrint
       return "[]" if a == []
 
       if a.instance_variable_defined?('@__awesome_methods__')
-        AwesomeMethodCollection.new(a).out
+        AwesomeMethodCollection.new(a).print
       elsif @options[:multiline]
         width = (a.size - 1).to_s.size 
 
@@ -195,7 +195,7 @@ module AwesomePrint
     # Format a method.
     #------------------------------------------------------------------------------
     def awesome_method(m)
-      AwesomeMethodData.new(m).out
+      AwesomeMethodData.new(m).print
     end
     alias :awesome_unboundmethod :awesome_method
 

@@ -60,7 +60,7 @@ class AwesomeMethodData
     end
   end
 
-  def out
+  def print
     "#{$format_options.colorize(owner, :class)}##{$format_options.colorize(method_name, :method)}#{$format_options.colorize(argument_list, :args)}"
   end
 end

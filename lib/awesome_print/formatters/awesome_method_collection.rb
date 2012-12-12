@@ -16,7 +16,7 @@ class AwesomeMethodCollection
     @methods.size
   end
 
-  def out
+  def print
     print_array do |result|
       @methods.each_with_index do |item, index|
         result << print_method(index, item)
@@ -27,7 +27,7 @@ class AwesomeMethodCollection
   private
 
   def print_indent
-    #This method is confusion because it appears to outdent only to indent again, but that is not all that is going on.
+    #This method is confusing because it appears to outdent only to indent again, but that is not all that is going on.
     #The indent method is dependent on any indented blocks.  The outdented block merely temporarily undoes the
     #   indent created by the indented block.  So here we undo the indented block and then add a regular indent
     $format_options.outdented do
