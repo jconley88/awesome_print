@@ -91,6 +91,7 @@ module AwesomePrint
 
       @formatter = AwesomePrint::Formatter.new(self)
       Thread.current[AP] ||= []
+      $format_options = FormatOptions.new(self)
     end
   
     # Dispatcher that detects data nesting and invokes object-aware formatter.
