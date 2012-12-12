@@ -33,6 +33,18 @@ class FormatOptions
     end
   end
 
+
+  # Format hash keys as plain strings regardless of underlying data type.
+  #------------------------------------------------------------------------------
+  def plain_single_line
+    plain, multiline = @options[:plain], @options[:multiline]
+    @options[:plain], @options[:multiline] = true, false
+    yield
+  ensure
+    @options[:plain], @options[:multiline] = plain, multiline
+  end
+
+
   # Utility methods.
   #------------------------------------------------------------------------------
   def align(value, width)

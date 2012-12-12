@@ -81,7 +81,7 @@ module AwesomePrint
 
       keys = @options[:sort_keys] ? h.keys.sort { |a, b| a.to_s <=> b.to_s } : h.keys
       data = keys.map do |key|
-        plain_single_line do
+        $format_options.plain_single_line do
           [ @inspector.awesome(key), h[key] ]
         end
       end
@@ -203,16 +203,6 @@ module AwesomePrint
     #------------------------------------------------------------------------------
     def awesome_instance(o)
       "#{o.class}:0x%08x" % (o.__id__ * 2)
-    end
-
-    # Format hash keys as plain strings regardless of underlying data type.
-    #------------------------------------------------------------------------------
-    def plain_single_line
-      plain, multiline = @options[:plain], @options[:multiline]
-      @options[:plain], @options[:multiline] = true, false
-      yield
-    ensure
-      @options[:plain], @options[:multiline] = plain, multiline
     end
   end
 end
