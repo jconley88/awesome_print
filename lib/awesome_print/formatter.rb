@@ -17,7 +17,6 @@ module AwesomePrint
     def initialize(inspector)
       @inspector   = inspector
       @options     = inspector.options
-      @indentation = @options[:indent].abs
     end
 
     # Main entry point to format an object.
@@ -89,7 +88,7 @@ module AwesomePrint
       end
       
       width = data.map { |key, | key.size }.max || 0
-      width += @indentation if @options[:indent] > 0
+      width += $format_options.indentation if @options[:indent] > 0
   
       data = data.map do |key, value|
         indented do
@@ -232,7 +231,7 @@ module AwesomePrint
         elsif @options[:indent] == 0
           indent + value.ljust(width)
         else
-          indent[0, @indentation + @options[:indent]] + value.ljust(width)
+          indent[0, $format_options.indentation + @options[:indent]] + value.ljust(width)
         end
       else
         value
@@ -240,10 +239,10 @@ module AwesomePrint
     end
 
     def indented
-      @indentation += @options[:indent].abs
+      $format_options.indentation += @options[:indent].abs
       yield
     ensure
-      @indentation -= @options[:indent].abs
+      $format_options.indentation -= @options[:indent].abs
     end
 
     def left_aligned
@@ -254,11 +253,11 @@ module AwesomePrint
     end
 
     def indent
-      ' ' * @indentation
+      ' ' * $format_options.indentation
     end
 
     def outdent
-      ' ' * (@indentation - @options[:indent].abs)
+      ' ' * ($format_options.indentation - @options[:indent].abs)
     end
 
     # To support limited output, for example:

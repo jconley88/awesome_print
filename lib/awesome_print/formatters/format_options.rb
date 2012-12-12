@@ -11,6 +11,10 @@ class FormatOptions
     @options
   end
 
+  def indentation
+    @indentation
+  end
+
   # Pick the color and apply it to the given string as necessary.
   #------------------------------------------------------------------------------
   def colorize(str, type)
