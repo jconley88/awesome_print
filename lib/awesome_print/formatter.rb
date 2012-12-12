@@ -56,7 +56,7 @@ module AwesomePrint
       return "[]" if a == []
 
       if a.instance_variable_defined?('@__awesome_methods__')
-        methods_array(a)
+        AwesomeMethodCollection.new(a).out
       elsif @options[:multiline]
         width = (a.size - 1).to_s.size 
 
@@ -204,12 +204,6 @@ module AwesomePrint
     #------------------------------------------------------------------------------
     def awesome_instance(o)
       "#{o.class}:0x%08x" % (o.__id__ * 2)
-    end
-
-    # Format object.methods array.
-    #------------------------------------------------------------------------------
-    def methods_array(a)
-      AwesomeMethodCollection.new(a).out
     end
 
     # Format hash keys as plain strings regardless of underlying data type.
