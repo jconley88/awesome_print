@@ -228,47 +228,31 @@ module AwesomePrint
     # Format object.methods array.
     #------------------------------------------------------------------------------
     def methods_array(a)
-      a.sort! { |x, y| x.to_s <=> y.to_s }                  # Can't simply a.sort! because of o.methods << [ :blah ]  #TODO remove this unnecessary sort
+      a.sort! { |x, y| x.to_s <=> y.to_s }                  # Can't simply a.sort! because of o.methods << [ :blah ]
       object = a.instance_variable_get('@__awesome_methods__')
-      lookup_order = [object.class.name, object.class.ancestors.map(&:name)].flatten
-      grouped_tuples = lookup_order.inject(Hash.new{|h, k| h[k] = []}) do |hash, name|
-        hash[name] = []
-        hash
-      end
-      a.each do |name|
+      tuples = a.map do |name|
         if name.is_a?(Symbol) || name.is_a?(String)         # Ignore garbage, ex. 42.methods << [ :blah ]
           tuple = if object.respond_to?(name, true)         # Is this a regular method?
             the_method = object.method(name) rescue nil     # Avoid potential ArgumentError if object#method is overridden.
             if the_method && the_method.respond_to?(:arity) # Is this original object#method?
-              grouped_tuples[the_method.owner.name] << method_tuple(the_method)                      # Yes, we are good.
+              method_tuple(the_method)                      # Yes, we are good.
             end
           elsif object.respond_to?(:instance_method)        # Is this an unbound method?
-            grouped_tuples['unbound'] << method_tuple(object.instance_method(name))
+            method_tuple(object.instance_method(name))
           end
         end
-        grouped_tuples['unknown'] << [ name.to_s, '(?)', '?' ] unless tuple                  # Return WTF default if all the above fails.
+        tuple || [ name.to_s, '(?)', '?' ]                  # Return WTF default if all the above fails.
       end
 
-      a = []
-      (grouped_tuples.values.reject(&:empty?).count - 1).times{|i| a << ""}
-      tuples = grouped_tuples.values.reject(&:empty?).zip(a).flatten(2).compact
-      only_tuples = tuples.reject(&:blank?)
+      width = (tuples.size - 1).to_s.size
+      name_width = tuples.map { |item| item[0].size }.max || 0
+      args_width = tuples.map { |item| item[1].size }.max || 0
 
-      width = (only_tuples.size - 1).to_s.size
-      name_width = only_tuples.map { |item| item[0].size }.max || 0
-      args_width = only_tuples.map { |item| item[1].size }.max || 0
-
-      tuples_count = 0
       data = tuples.inject([]) do |arr, item|
-        if item.is_a?(String)
-          arr << item
-        else
-          index = indent
-          index << "[#{tuples_count.to_s.rjust(width)}]" if @options[:index]
-          tuples_count += 1
-          indented do
-            arr << "#{index} #{colorize(item[0].rjust(name_width), :method)}#{colorize(item[1].ljust(args_width), :args)} #{colorize(item[2], :class)}"
-          end
+        index = indent
+        index << "[#{arr.size.to_s.rjust(width)}]" if @options[:index]
+        indented do
+          arr << "#{index} #{colorize(item[0].rjust(name_width), :method)}#{colorize(item[1].ljust(args_width), :args)} #{colorize(item[2], :class)}"
         end
       end
 
