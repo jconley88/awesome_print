@@ -248,6 +248,8 @@ module AwesomePrint
       name_width = tuples.map { |item| item[0].size }.max || 0
       args_width = tuples.map { |item| item[1].size }.max || 0
 
+      tuples.sort! { |x, y| (x.last <=> y.last).nonzero? || x.first <=> y.first }
+
       data = tuples.inject([]) do |arr, item|
         index = indent
         index << "[#{arr.size.to_s.rjust(width)}]" if @options[:index]
