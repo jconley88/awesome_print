@@ -228,7 +228,6 @@ module AwesomePrint
     # Format object.methods array.
     #------------------------------------------------------------------------------
     def methods_array(a)
-      a.sort! { |x, y| x.to_s <=> y.to_s }                  # Can't simply a.sort! because of o.methods << [ :blah ]
       object = a.instance_variable_get('@__awesome_methods__')
       tuples = a.map do |name|
         if name.is_a?(Symbol) || name.is_a?(String)         # Ignore garbage, ex. 42.methods << [ :blah ]
@@ -248,7 +247,16 @@ module AwesomePrint
       name_width = tuples.map { |item| item[0].size }.max || 0
       args_width = tuples.map { |item| item[1].size }.max || 0
 
-      tuples.sort! { |x, y| (x.last <=> y.last).nonzero? || x.first <=> y.first }
+      ancestors = object.class.ancestors
+      tuples.sort! do |x, y|
+        x_index = ancestors.index(x.last)
+        y_index = ancestors.index(y.last)
+        if ( x_index && y_index && order = (x_index <=> y_index).nonzero?)
+          order
+        else
+          x.first <=> y.first
+        end
+      end
 
       data = tuples.inject([]) do |arr, item|
         index = indent
@@ -297,7 +305,7 @@ module AwesomePrint
         owner = "#{klass}#{unbound}".gsub('(', ' (')
       end
 
-      [ method.name.to_s, "(#{args.join(', ')})", owner.to_s ]
+      [ method.name.to_s, "(#{args.join(', ')})", owner.to_s, method.owner ]
     end
 
     # Format hash keys as plain strings regardless of underlying data type.
