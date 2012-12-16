@@ -240,7 +240,7 @@ module AwesomePrint
             method_tuple(object.instance_method(name))
           end
         end
-        tuple || [ name.to_s, '(?)', '?' ]                  # Return WTF default if all the above fails.
+        tuple || [ name.to_s, '(?)', '?', '']               # Return WTF default if all the above fails.
       end
 
       width = (tuples.size - 1).to_s.size
